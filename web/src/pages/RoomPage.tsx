@@ -96,7 +96,7 @@ export function RoomPage() {
 
   const handleJoinFromLink = async () => {
     if (!joinUsername.trim()) {
-      setJoinError('Please enter your name');
+      setJoinError('名前を入力してください');
       return;
     }
 
@@ -155,17 +155,17 @@ export function RoomPage() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-[hsl(var(--background))]">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2">Join Meeting</h1>
+            <h1 className="text-3xl font-bold mb-2">会議に参加</h1>
             <p className="text-[hsl(var(--muted-foreground))]">
-              Room: {urlRoomId}
+              ルーム: {urlRoomId}
             </p>
           </div>
 
           <div className="space-y-4 bg-[hsl(var(--card))] p-6 rounded-lg border border-[hsl(var(--border))]">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your name</label>
+              <label className="text-sm font-medium">名前</label>
               <Input
-                placeholder="Enter your name"
+                placeholder="名前を入力"
                 value={joinUsername}
                 onChange={(e) => setJoinUsername(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleJoinFromLink()}
@@ -174,11 +174,11 @@ export function RoomPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Password <span className="text-[hsl(var(--muted-foreground))]">(if required)</span>
+                パスワード <span className="text-[hsl(var(--muted-foreground))]">(必要な場合)</span>
               </label>
               <Input
                 type="password"
-                placeholder="Enter password"
+                placeholder="パスワードを入力"
                 value={joinPassword}
                 onChange={(e) => setJoinPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleJoinFromLink()}
@@ -193,14 +193,14 @@ export function RoomPage() {
                 className="flex-1"
                 onClick={() => navigate('/')}
               >
-                Cancel
+                キャンセル
               </Button>
               <Button
                 className="flex-1"
                 onClick={handleJoinFromLink}
                 disabled={isJoining}
               >
-                Join Meeting
+                参加する
               </Button>
             </div>
           </div>
@@ -250,7 +250,7 @@ export function RoomPage() {
   if (!roomId && !isConnected) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background))]">
-        <p className="text-[hsl(var(--foreground))]">Connecting...</p>
+        <p className="text-[hsl(var(--foreground))]">接続中...</p>
       </div>
     );
   }
@@ -262,7 +262,7 @@ export function RoomPage() {
         <div className="flex items-center gap-2">
           <h1 className="font-semibold text-[hsl(var(--foreground))]">OpenMeet</h1>
           <span className="text-sm text-[hsl(var(--muted-foreground))]">
-            Room: {urlRoomId || roomId}
+            ルーム: {urlRoomId || roomId}
           </span>
           <Button
             variant="ghost"
@@ -273,12 +273,12 @@ export function RoomPage() {
             {isCopied ? (
               <>
                 <CheckIcon className="w-4 h-4 text-green-500" />
-                <span className="text-green-500">Copied!</span>
+                <span className="text-green-500">コピーしました</span>
               </>
             ) : (
               <>
                 <Link2Icon className="w-4 h-4" />
-                <span>Share</span>
+                <span>共有</span>
               </>
             )}
           </Button>
@@ -286,7 +286,7 @@ export function RoomPage() {
         <div className="flex items-center gap-2">
           {isAdmin && (
             <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded">
-              Host
+              ホスト
             </span>
           )}
           <SettingsPanel

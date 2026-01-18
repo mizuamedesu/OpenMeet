@@ -32,7 +32,7 @@ export function ChatPanel() {
   return (
     <div className="flex flex-col h-full bg-[hsl(var(--card))] border-l border-[hsl(var(--border))]">
       <div className="p-3 border-b border-[hsl(var(--border))]">
-        <h3 className="font-semibold">Chat</h3>
+        <h3 className="font-semibold">チャット</h3>
       </div>
 
       <ScrollArea className="flex-1 p-3">
@@ -57,7 +57,7 @@ export function ChatPanel() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={canChat ? 'Type a message...' : 'Chat disabled'}
+            placeholder={canChat ? 'メッセージを入力...' : 'チャットが無効です'}
             disabled={!canChat}
             className="flex-1"
           />

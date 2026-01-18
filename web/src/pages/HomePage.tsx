@@ -28,7 +28,7 @@ export function HomePage() {
 
   const handleCreate = async () => {
     if (!username.trim()) {
-      setError('Please enter your name');
+      setError('名前を入力してください');
       return;
     }
 
@@ -40,7 +40,7 @@ export function HomePage() {
       const newRoomId = await createRoom(username, password || undefined);
       navigate(`/room/${newRoomId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create room');
+      setError(err instanceof Error ? err.message : 'ルームの作成に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -48,11 +48,11 @@ export function HomePage() {
 
   const handleJoin = async () => {
     if (!username.trim()) {
-      setError('Please enter your name');
+      setError('名前を入力してください');
       return;
     }
     if (!roomId.trim()) {
-      setError('Please enter a room ID');
+      setError('ルームIDを入力してください');
       return;
     }
 
@@ -64,7 +64,7 @@ export function HomePage() {
       await joinRoom(roomId, username, password || undefined);
       navigate(`/room/${roomId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join room');
+      setError(err instanceof Error ? err.message : 'ルームへの参加に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -80,14 +80,19 @@ export function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
+        {/* SEO-friendly header with h1 */}
+        <header className="text-center">
           <h1 className="text-4xl font-bold mb-2">OpenMeet</h1>
-          <p className="text-[hsl(var(--muted-foreground))]">
-            Secure, peer-to-peer video conferencing
+          <p className="text-[hsl(var(--muted-foreground))] text-lg">
+            無料ビデオ会議ツール
           </p>
-        </div>
+          <p className="text-[hsl(var(--muted-foreground))] text-sm mt-1">
+            Zoom・Google Meet代替のオンライン会議
+          </p>
+        </header>
 
-        <div className="space-y-4">
+        {/* Main action buttons */}
+        <main className="space-y-4">
           <Button
             className="w-full"
             size="lg"
@@ -96,7 +101,7 @@ export function HomePage() {
               setShowCreateDialog(true);
             }}
           >
-            Create a new meeting
+            新しい会議を作成
           </Button>
 
           <Button
@@ -108,26 +113,60 @@ export function HomePage() {
               setShowJoinDialog(true);
             }}
           >
-            Join a meeting
+            会議に参加
           </Button>
-        </div>
+        </main>
 
-        <div className="text-center text-sm text-[hsl(var(--muted-foreground))]">
-          <p>End-to-end encrypted. No account required.</p>
-        </div>
+        {/* Feature highlights for SEO */}
+        <section className="text-center text-sm text-[hsl(var(--muted-foreground))]">
+          <p>エンドツーエンド暗号化で安全。アカウント登録不要。</p>
+        </section>
 
-        <div className="text-center text-xs text-[hsl(var(--muted-foreground))] space-y-1 pt-4 border-t border-[hsl(var(--border))]">
+        {/* Why free section */}
+        <section className="text-left text-sm text-[hsl(var(--muted-foreground))] space-y-3 pt-4 border-t border-[hsl(var(--border))]">
+          <h2 className="text-base font-semibold text-[hsl(var(--foreground))]">なぜこのサービスは無料なのか？</h2>
+          <div className="mb-4">
+            <img
+              src="/独法.png"
+              alt="独法"
+              className="w-full max-w-md mx-auto rounded-lg"
+            />
+          </div>
           <p>
-            TURN/Signaling powered by{' '}
+            そもそもオンライン通話やビデオ通話はオンラインゲームのように、権威的なサーバーを必要としないため、本来クライアント同士で直接通信が可能です。(P2P)
+          </p>
+          <p>
+            又WebRTCを用いればP2Pの実装もたやすく、サーバーがやることはせいぜいUDPパンチホール程度しかありません。要はそこら辺のオンラインゲームに比べてはるかに少ない計算リソースとネットワーク帯域で実現できるわけです。
+          </p>
+          <p>
+            それなのにGoogleMeetやZoom、Skypeは非常に高い料金を未だに要求します。私はコンピューターサイエンスを学ぶあまりお金のない大学生のため、これに非常に怒りを覚えていました。そこでそこらへんに落ちていたパソコンパーツで作成したサーバーでシグナリングと、TURNを行うこのWebアプリをClaudeCodeを用いて作成しました。
+          </p>
+          <p>
+            二重NAT下でも中継して接続できるようにするTURNは、大学で我々がやっている大変インチキなインフラ、
             <a
               href="https://ultra.coins.tsukuba.ac.jp/"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-[hsl(var(--foreground))]"
             >
-              Ultra COINS
+              Ultra-Coins
             </a>
+            の上に立っています。
           </p>
+          <div className="mt-4">
+            <img
+              src="/server.jpg"
+              alt="サーバー"
+              className="w-full max-w-md mx-auto rounded-lg border border-[hsl(var(--border))]"
+            />
+            <p className="text-xs text-center mt-2">
+              実際にこのアプリのサーバー部分を担当しているPC（フロントはCloudflare Pages）。Ryzen 7 2700x、メモリ32GBとかの昔使ってたやつです。
+            </p>
+          </div>
+        </section>
+
+        {/* Footer with links */}
+        <footer className="text-center text-xs text-[hsl(var(--muted-foreground))] space-y-1 pt-4 border-t border-[hsl(var(--border))]">
           <p>
             <a
               href="https://github.com/mizuamedesu/OpenMeet"
@@ -135,28 +174,39 @@ export function HomePage() {
               rel="noopener noreferrer"
               className="underline hover:text-[hsl(var(--foreground))]"
             >
-              Open source
+              オープンソース
             </a>
-            {' '}- Self-host your own instance
+            {' '}- 自分のサーバーでホスト可能
           </p>
-        </div>
+          <p>
+            開発者:{' '}
+            <a
+              href="https://mizuame.works/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[hsl(var(--foreground))]"
+            >
+              みずあめ
+            </a>
+          </p>
+        </footer>
       </div>
 
       {/* Create Room Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create a new meeting</DialogTitle>
+            <DialogTitle>新しい会議を作成</DialogTitle>
             <DialogDescription>
-              Enter your name and optionally set a password for the room.
+              名前を入力してください。パスワードは任意で設定できます。
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your name</label>
+              <label className="text-sm font-medium">名前</label>
               <Input
-                placeholder="Enter your name"
+                placeholder="名前を入力"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -164,11 +214,11 @@ export function HomePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Password <span className="text-[hsl(var(--muted-foreground))]">(optional)</span>
+                パスワード <span className="text-[hsl(var(--muted-foreground))]">(任意)</span>
               </label>
               <Input
                 type="password"
-                placeholder="Enter password"
+                placeholder="パスワードを入力"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -179,10 +229,10 @@ export function HomePage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Cancel
+              キャンセル
             </Button>
             <Button onClick={handleCreate} disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create meeting'}
+              {isLoading ? '作成中...' : '会議を作成'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -192,26 +242,26 @@ export function HomePage() {
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Join a meeting</DialogTitle>
+            <DialogTitle>会議に参加</DialogTitle>
             <DialogDescription>
-              Enter the room ID and your name to join.
+              ルームIDと名前を入力して参加してください。
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Room ID</label>
+              <label className="text-sm font-medium">ルームID</label>
               <Input
-                placeholder="Enter room ID"
+                placeholder="ルームIDを入力"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your name</label>
+              <label className="text-sm font-medium">名前</label>
               <Input
-                placeholder="Enter your name"
+                placeholder="名前を入力"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -219,11 +269,11 @@ export function HomePage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Password <span className="text-[hsl(var(--muted-foreground))]">(optional)</span>
+                パスワード <span className="text-[hsl(var(--muted-foreground))]">(必要な場合)</span>
               </label>
               <Input
                 type="password"
-                placeholder="Enter password if required"
+                placeholder="パスワードを入力"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -234,10 +284,10 @@ export function HomePage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowJoinDialog(false)}>
-              Cancel
+              キャンセル
             </Button>
             <Button onClick={handleJoin} disabled={isLoading}>
-              {isLoading ? 'Joining...' : 'Join meeting'}
+              {isLoading ? '参加中...' : '会議に参加'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -47,7 +47,7 @@ export function ParticipantsList({
   return (
     <div className="flex flex-col h-full bg-[hsl(var(--card))] border-l border-[hsl(var(--border))]">
       <div className="p-3 border-b border-[hsl(var(--border))]">
-        <h3 className="font-semibold">Participants ({users.length})</h3>
+        <h3 className="font-semibold">参加者 ({users.length})</h3>
       </div>
 
       <ScrollArea className="flex-1">
@@ -65,10 +65,10 @@ export function ParticipantsList({
                   <div className="text-sm font-medium flex items-center gap-1">
                     {user.username}
                     {user.id === currentUserId && (
-                      <span className="text-xs text-[hsl(var(--muted-foreground))]">(You)</span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))]">(自分)</span>
                     )}
                     {user.isAdmin && (
-                      <span className="text-xs text-yellow-500">★ Host</span>
+                      <span className="text-xs text-yellow-500">★ ホスト</span>
                     )}
                   </div>
                 </div>
@@ -97,28 +97,28 @@ export function ParticipantsList({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onMute(user.id, !user.isMuted)}>
                         <SpeakerOffIcon className="w-4 h-4 mr-2" />
-                        {user.isMuted ? 'Unmute' : 'Mute'}
+                        {user.isMuted ? 'ミュート解除' : 'ミュート'}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onVideoOff(user.id, !user.isVideoOff)}>
                         <CameraIcon className="w-4 h-4 mr-2" />
-                        {user.isVideoOff ? 'Enable video' : 'Disable video'}
+                        {user.isVideoOff ? 'ビデオを許可' : 'ビデオを無効化'}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onChatPermission(user.id, !user.canChat)}>
                         <ChatBubbleIcon className="w-4 h-4 mr-2" />
-                        {user.canChat ? 'Disable chat' : 'Enable chat'}
+                        {user.canChat ? 'チャットを無効化' : 'チャットを許可'}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onTransferAdmin(user.id)}>
                         <PersonIcon className="w-4 h-4 mr-2" />
-                        Make host
+                        ホストにする
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onSetPriority(user.id, Math.max(0, user.adminPriority - 1))}>
                         <ChevronUpIcon className="w-4 h-4 mr-2" />
-                        Priority up ({user.adminPriority})
+                        優先度を上げる ({user.adminPriority})
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onSetPriority(user.id, user.adminPriority + 1)}>
                         <ChevronDownIcon className="w-4 h-4 mr-2" />
-                        Priority down
+                        優先度を下げる
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -126,7 +126,7 @@ export function ParticipantsList({
                         className="text-red-500 focus:text-red-500"
                       >
                         <Cross2Icon className="w-4 h-4 mr-2" />
-                        Kick
+                        退出させる
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

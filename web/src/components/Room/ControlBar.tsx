@@ -63,10 +63,10 @@ export function ControlBar({
           </TooltipTrigger>
           <TooltipContent>
             {isMutedByAdmin
-              ? 'Muted by admin'
+              ? 'ホストによりミュートされています'
               : isAudioEnabled
-              ? 'Mute'
-              : 'Unmute'}
+              ? 'ミュート'
+              : 'ミュート解除'}
           </TooltipContent>
         </Tooltip>
 
@@ -88,10 +88,10 @@ export function ControlBar({
           </TooltipTrigger>
           <TooltipContent>
             {isVideoOffByAdmin
-              ? 'Video disabled by admin'
+              ? 'ホストによりビデオが無効にされています'
               : isVideoEnabled
-              ? 'Stop video'
-              : 'Start video'}
+              ? 'ビデオを停止'
+              : 'ビデオを開始'}
           </TooltipContent>
         </Tooltip>
 
@@ -107,7 +107,7 @@ export function ControlBar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {isScreenSharing ? 'Stop sharing' : 'Share screen'}
+            {isScreenSharing ? '共有を停止' : '画面共有'}
           </TooltipContent>
         </Tooltip>
 
@@ -124,7 +124,7 @@ export function ControlBar({
               <ChatBubbleIcon className="w-5 h-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Chat</TooltipContent>
+          <TooltipContent>チャット</TooltipContent>
         </Tooltip>
 
         {/* Participants toggle */}
@@ -138,7 +138,7 @@ export function ControlBar({
               <PersonIcon className="w-5 h-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Participants</TooltipContent>
+          <TooltipContent>参加者</TooltipContent>
         </Tooltip>
 
         <div className="w-px h-8 bg-[hsl(var(--border))] mx-2" />
@@ -150,7 +150,7 @@ export function ControlBar({
               <ExitIcon className="w-5 h-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Leave meeting</TooltipContent>
+          <TooltipContent>退出</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

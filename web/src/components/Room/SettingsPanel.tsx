@@ -72,6 +72,9 @@ export function SettingsPanel({
   useEffect(() => {
     if (videoRef.current && localStream && open) {
       videoRef.current.srcObject = localStream;
+      videoRef.current.play().catch((e) => {
+        console.warn('Video preview autoplay prevented:', e);
+      });
     }
   }, [localStream, open]);
 
@@ -176,10 +179,10 @@ export function SettingsPanel({
             <select
               value={selectedAudioInput}
               onChange={(e) => handleAudioInputChange(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-transparent text-sm"
+              className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm"
             >
               {audioInputs.map((device) => (
-                <option key={device.deviceId} value={device.deviceId}>
+                <option key={device.deviceId} value={device.deviceId} className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
                   {device.label}
                 </option>
               ))}
@@ -204,10 +207,10 @@ export function SettingsPanel({
               value={selectedVideoInput}
               onChange={(e) => handleVideoInputChange(e.target.value)}
               disabled={isScreenSharing}
-              className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-transparent text-sm disabled:opacity-50"
+              className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm disabled:opacity-50"
             >
               {videoInputs.map((device) => (
-                <option key={device.deviceId} value={device.deviceId}>
+                <option key={device.deviceId} value={device.deviceId} className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
                   {device.label}
                 </option>
               ))}
@@ -224,10 +227,10 @@ export function SettingsPanel({
             <div className="space-y-2">
               <label className="text-sm font-medium">スピーカー</label>
               <select
-                className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-transparent text-sm"
+                className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm"
               >
                 {audioOutputs.map((device) => (
-                  <option key={device.deviceId} value={device.deviceId}>
+                  <option key={device.deviceId} value={device.deviceId} className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
                     {device.label}
                   </option>
                 ))}

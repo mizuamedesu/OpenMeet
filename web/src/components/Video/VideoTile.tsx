@@ -108,7 +108,7 @@ export function VideoTile({
       <div className="absolute bottom-2 left-2 flex items-center gap-1">
         <span className={`px-2 py-1 bg-black/60 rounded text-white ${isFullscreen ? 'text-sm' : 'text-xs'}`}>
           {username}
-          {isLocal && ' (You)'}
+          {isLocal && ' (自分)'}
           {isAdmin && ' ★'}
         </span>
       </div>
@@ -117,7 +117,7 @@ export function VideoTile({
       {!isFullscreen && (
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           <span className="px-3 py-1.5 bg-black/70 rounded-full text-white text-xs">
-            Click to expand
+            クリックで拡大
           </span>
         </div>
       )}

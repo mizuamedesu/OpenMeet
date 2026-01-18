@@ -51,6 +51,7 @@
 
 body {
   @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+  font-family: 'Noto Sans JP', sans-serif;
   margin: 0;
   min-height: 100vh;
 }
