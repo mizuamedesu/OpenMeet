@@ -1,15 +1,12 @@
-# Signaling server only (web is deployed to Pages)
-# Use with existing nginx reverse proxy
-
 services:
   server:
     build: ./server
     ports:
-      - "127.0.0.1:4000:4000"
+      - "4000:4000"
     environment:
       - PORT=4000
       - CORS_ORIGIN=${CORS_ORIGIN:-*}
-      - TURN_ENABLED=${TURN_ENABLED:-false}
+      - TURN_ENABLED=${TURN_ENABLED:-true}
       - TURN_URL=${TURN_URL:-}
       - TURN_USERNAME=${TURN_USERNAME:-}
       - TURN_PASSWORD=${TURN_PASSWORD:-}
