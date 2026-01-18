@@ -118,7 +118,7 @@ export function HomePage() {
 
         <div className="text-center text-xs text-[hsl(var(--muted-foreground))] space-y-1 pt-4 border-t border-[hsl(var(--border))]">
           <p>
-            TURN/STUN powered by{' '}
+            TURN/Signaling powered by{' '}
             <a
               href="https://ultra.coins.tsukuba.ac.jp/"
               target="_blank"
