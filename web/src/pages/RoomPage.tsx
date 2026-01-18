@@ -28,6 +28,8 @@ export function RoomPage() {
     muteUser,
     setUserVideoOff,
     setUserChatPermission,
+    transferAdmin,
+    setUserPriority,
   } = useRoom();
 
   const {
@@ -246,6 +248,8 @@ export function RoomPage() {
               onMute={muteUser}
               onVideoOff={setUserVideoOff}
               onChatPermission={setUserChatPermission}
+              onTransferAdmin={transferAdmin}
+              onSetPriority={setUserPriority}
             />
           </div>
         )}

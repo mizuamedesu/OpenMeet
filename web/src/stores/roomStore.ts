@@ -31,6 +31,7 @@ interface RoomState {
 
   // Actions
   setRoom: (roomId: string, userId: string, isAdmin: boolean) => void;
+  setAdmin: (isAdmin: boolean) => void;
   setUsername: (username: string) => void;
   setConnected: (connected: boolean) => void;
   setUsers: (users: User[]) => void;
@@ -73,6 +74,8 @@ export const useRoomStore = create<RoomState>((set) => ({
 
   setRoom: (roomId, userId, isAdmin) =>
     set({ roomId, userId, isAdmin }),
+
+  setAdmin: (isAdmin) => set({ isAdmin }),
 
   setUsername: (username) => set({ username }),
 

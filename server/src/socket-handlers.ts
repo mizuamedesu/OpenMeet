@@ -82,6 +82,7 @@ export function setupSocketHandlers(io: TypedServer, config: ServerConfig): void
           canChat: user.canChat,
           isMuted: user.isMuted,
           isVideoOff: user.isVideoOff,
+          adminPriority: user.adminPriority,
         },
       });
 
@@ -255,6 +256,49 @@ export function setupSocketHandlers(io: TypedServer, config: ServerConfig): void
       });
     });
 
+    // Transfer admin rights
+    socket.on('admin:transfer', (data) => {
+      const roomId = socket.data.roomId;
+      const userId = socket.data.userId;
+      if (!roomId || !userId) return;
+
+      if (!roomManager.transferAdmin(roomId, userId, data.targetId)) return;
+
+      const room = roomManager.getRoom(roomId);
+      if (!room) return;
+
+      const newAdmin = room.users.get(data.targetId);
+      if (newAdmin) {
+        io.to(newAdmin.socketId).emit('admin:promoted');
+      }
+
+      // Notify all users about both changes
+      io.to(roomId).emit('admin:user-updated', {
+        userId: userId,
+        updates: { isAdmin: false },
+      });
+      io.to(roomId).emit('admin:user-updated', {
+        userId: data.targetId,
+        updates: { isAdmin: true },
+      });
+    });
+
+    // Set admin succession priority
+    socket.on('admin:set-priority', (data) => {
+      const roomId = socket.data.roomId;
+      const userId = socket.data.userId;
+      if (!roomId || !userId) return;
+
+      if (!roomManager.isAdmin(roomId, userId)) return;
+
+      if (!roomManager.setAdminPriority(roomId, data.targetId, data.priority)) return;
+
+      io.to(roomId).emit('admin:user-updated', {
+        userId: data.targetId,
+        updates: { adminPriority: data.priority },
+      });
+    });
+
     // Disconnect
     socket.on('disconnect', () => {
       handleDisconnect(socket);
@@ -266,8 +310,25 @@ export function setupSocketHandlers(io: TypedServer, config: ServerConfig): void
     const userId = socket.data.userId;
 
     if (roomId && userId) {
+      const wasAdmin = roomManager.isAdmin(roomId, userId);
       roomManager.removeUser(roomId, userId);
       socket.to(roomId).emit('room:user-left', { userId });
+
+      // If admin left, notify new admin
+      if (wasAdmin) {
+        const room = roomManager.getRoom(roomId);
+        if (room && room.adminId) {
+          const newAdmin = room.users.get(room.adminId);
+          if (newAdmin) {
+            io.to(newAdmin.socketId).emit('admin:promoted');
+            io.to(roomId).emit('admin:user-updated', {
+              userId: room.adminId,
+              updates: { isAdmin: true },
+            });
+          }
+        }
+      }
+
       socket.leave(roomId);
     }
 

@@ -5,6 +5,7 @@ export interface User {
   canChat: boolean;
   isMuted: boolean;
   isVideoOff: boolean;
+  adminPriority: number;
 }
 
 export interface ChatMessage {

@@ -4,6 +4,9 @@ import {
   ChatBubbleIcon,
   Cross2Icon,
   DotsVerticalIcon,
+  PersonIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from '@radix-ui/react-icons';
 import { Button } from '../ui/Button';
 import { ScrollArea } from '../ui/ScrollArea';
@@ -24,6 +27,8 @@ interface ParticipantsListProps {
   onMute: (userId: string, muted: boolean) => void;
   onVideoOff: (userId: string, videoOff: boolean) => void;
   onChatPermission: (userId: string, canChat: boolean) => void;
+  onTransferAdmin: (userId: string) => void;
+  onSetPriority: (userId: string, priority: number) => void;
 }
 
 export function ParticipantsList({
@@ -34,7 +39,11 @@ export function ParticipantsList({
   onMute,
   onVideoOff,
   onChatPermission,
+  onTransferAdmin,
+  onSetPriority,
 }: ParticipantsListProps) {
+  // Sort by priority for display
+  const sortedUsers = [...users].sort((a, b) => a.adminPriority - b.adminPriority);
   return (
     <div className="flex flex-col h-full bg-[hsl(var(--card))] border-l border-[hsl(var(--border))]">
       <div className="p-3 border-b border-[hsl(var(--border))]">
@@ -43,7 +52,7 @@ export function ParticipantsList({
 
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {users.map((user) => (
+          {sortedUsers.map((user) => (
             <div
               key={user.id}
               className="flex items-center justify-between p-2 rounded-md hover:bg-[hsl(var(--accent))]"
@@ -97,6 +106,19 @@ export function ParticipantsList({
                       <DropdownMenuItem onClick={() => onChatPermission(user.id, !user.canChat)}>
                         <ChatBubbleIcon className="w-4 h-4 mr-2" />
                         {user.canChat ? 'Disable chat' : 'Enable chat'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onTransferAdmin(user.id)}>
+                        <PersonIcon className="w-4 h-4 mr-2" />
+                        Make host
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSetPriority(user.id, Math.max(0, user.adminPriority - 1))}>
+                        <ChevronUpIcon className="w-4 h-4 mr-2" />
+                        Priority up ({user.adminPriority})
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSetPriority(user.id, user.adminPriority + 1)}>
+                        <ChevronDownIcon className="w-4 h-4 mr-2" />
+                        Priority down
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

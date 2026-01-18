@@ -27,6 +27,7 @@ export function useRoom() {
     isAdmin,
     users,
     setRoom,
+    setAdmin,
     setUsername,
     setConnected,
     setUsers,
@@ -46,6 +47,22 @@ export function useRoom() {
   const socket = getSocket();
 
   useEffect(() => {
+    // Remove existing listeners first to prevent duplicates
+    socket.off('room:joined');
+    socket.off('room:user-joined');
+    socket.off('room:user-left');
+    socket.off('room:error');
+    socket.off('webrtc:offer');
+    socket.off('webrtc:answer');
+    socket.off('webrtc:ice-candidate');
+    socket.off('chat:message');
+    socket.off('admin:kicked');
+    socket.off('admin:muted');
+    socket.off('admin:video-off');
+    socket.off('admin:chat-permission');
+    socket.off('admin:user-updated');
+    socket.off('admin:promoted');
+
     // Socket event listeners
     socket.on('room:joined', (data) => {
       setUsers(data.users);
@@ -131,6 +148,10 @@ export function useRoom() {
       updateUser(data.userId, data.updates);
     });
 
+    socket.on('admin:promoted', () => {
+      setAdmin(true);
+    });
+
     // Setup WebRTC callbacks
     webrtcManager.setCallbacks({
       onTrack: (peerId, stream) => {
@@ -163,6 +184,7 @@ export function useRoom() {
       socket.off('admin:video-off');
       socket.off('admin:chat-permission');
       socket.off('admin:user-updated');
+      socket.off('admin:promoted');
     };
   }, []);
 
@@ -251,6 +273,21 @@ export function useRoom() {
     [socket]
   );
 
+  const transferAdmin = useCallback(
+    (targetId: string) => {
+      socket.emit('admin:transfer', { targetId });
+      setAdmin(false);
+    },
+    [socket, setAdmin]
+  );
+
+  const setUserPriority = useCallback(
+    (targetId: string, priority: number) => {
+      socket.emit('admin:set-priority', { targetId, priority });
+    },
+    [socket]
+  );
+
   return {
     roomId,
     userId,
@@ -265,5 +302,7 @@ export function useRoom() {
     muteUser,
     setUserVideoOff,
     setUserChatPermission,
+    transferAdmin,
+    setUserPriority,
   };
 }

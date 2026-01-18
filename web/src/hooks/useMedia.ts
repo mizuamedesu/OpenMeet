@@ -19,6 +19,12 @@ export function useMedia() {
   } = useRoomStore();
 
   useEffect(() => {
+    // Sync localStream from webrtcManager on mount (persists across page navigation)
+    const existingStream = webrtcManager.getLocalStreamSync();
+    if (existingStream) {
+      setLocalStream(existingStream);
+    }
+
     // Check if mediaDevices API is available (requires secure context: HTTPS or localhost)
     if (!navigator.mediaDevices) {
       console.warn('MediaDevices API not available. Use HTTPS or localhost.');

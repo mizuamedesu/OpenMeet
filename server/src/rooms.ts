@@ -48,6 +48,7 @@ class RoomManager {
       canChat: true,
       isMuted: false,
       isVideoOff: false,
+      adminPriority: room.users.size, // New users get lowest priority
     };
 
     if (isFirstUser) {
@@ -70,12 +71,15 @@ class RoomManager {
       return;
     }
 
-    // If admin left, assign new admin to first user
+    // If admin left, assign new admin based on priority
     if (room.adminId === userId) {
-      const firstUser = room.users.values().next().value;
-      if (firstUser) {
-        firstUser.isAdmin = true;
-        room.adminId = firstUser.id;
+      const usersArray = Array.from(room.users.values());
+      // Sort by priority (lower = higher priority)
+      usersArray.sort((a, b) => a.adminPriority - b.adminPriority);
+      const newAdmin = usersArray[0];
+      if (newAdmin) {
+        newAdmin.isAdmin = true;
+        room.adminId = newAdmin.id;
       }
     }
   }
@@ -107,6 +111,7 @@ class RoomManager {
       canChat: user.canChat,
       isMuted: user.isMuted,
       isVideoOff: user.isVideoOff,
+      adminPriority: user.adminPriority,
     }));
   }
 
@@ -124,6 +129,32 @@ class RoomManager {
   isAdmin(roomId: string, userId: string): boolean {
     const room = this.rooms.get(roomId);
     return room?.adminId === userId;
+  }
+
+  transferAdmin(roomId: string, fromUserId: string, toUserId: string): boolean {
+    const room = this.rooms.get(roomId);
+    if (!room) return false;
+    if (room.adminId !== fromUserId) return false;
+
+    const fromUser = room.users.get(fromUserId);
+    const toUser = room.users.get(toUserId);
+    if (!fromUser || !toUser) return false;
+
+    fromUser.isAdmin = false;
+    toUser.isAdmin = true;
+    room.adminId = toUserId;
+    return true;
+  }
+
+  setAdminPriority(roomId: string, userId: string, priority: number): boolean {
+    const room = this.rooms.get(roomId);
+    if (!room) return false;
+
+    const user = room.users.get(userId);
+    if (!user) return false;
+
+    user.adminPriority = priority;
+    return true;
   }
 }
 

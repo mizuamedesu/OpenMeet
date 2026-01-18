@@ -7,6 +7,7 @@ export interface User {
   canChat: boolean;
   isMuted: boolean;
   isVideoOff: boolean;
+  adminPriority: number; // Lower = higher priority for succession
 }
 
 export interface Room {
@@ -46,6 +47,8 @@ export interface ClientToServerEvents {
   'admin:mute': (data: { targetId: string; muted: boolean }) => void;
   'admin:video-off': (data: { targetId: string; videoOff: boolean }) => void;
   'admin:chat-permission': (data: { targetId: string; canChat: boolean }) => void;
+  'admin:transfer': (data: { targetId: string }) => void;
+  'admin:set-priority': (data: { targetId: string; priority: number }) => void;
 }
 
 export interface ServerToClientEvents {
@@ -66,6 +69,7 @@ export interface ServerToClientEvents {
   'admin:video-off': (data: { videoOff: boolean }) => void;
   'admin:chat-permission': (data: { canChat: boolean }) => void;
   'admin:user-updated': (data: { userId: string; updates: Partial<UserInfo> }) => void;
+  'admin:promoted': () => void;
 }
 
 export interface RoomResponse {
@@ -89,4 +93,5 @@ export interface UserInfo {
   canChat: boolean;
   isMuted: boolean;
   isVideoOff: boolean;
+  adminPriority: number;
 }

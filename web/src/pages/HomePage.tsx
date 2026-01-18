@@ -115,6 +115,31 @@ export function HomePage() {
         <div className="text-center text-sm text-[hsl(var(--muted-foreground))]">
           <p>End-to-end encrypted. No account required.</p>
         </div>
+
+        <div className="text-center text-xs text-[hsl(var(--muted-foreground))] space-y-1 pt-4 border-t border-[hsl(var(--border))]">
+          <p>
+            TURN/STUN powered by{' '}
+            <a
+              href="https://ultra.coins.tsukuba.ac.jp/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[hsl(var(--foreground))]"
+            >
+              Ultra COINS Lab, University of Tsukuba
+            </a>
+          </p>
+          <p>
+            <a
+              href="https://github.com/mizuamedesu/OpenMeet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[hsl(var(--foreground))]"
+            >
+              Open source
+            </a>
+            {' '}- Self-host your own instance
+          </p>
+        </div>
       </div>
 
       {/* Create Room Dialog */}
