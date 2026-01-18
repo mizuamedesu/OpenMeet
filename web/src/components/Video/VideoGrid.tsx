@@ -26,14 +26,17 @@ export function VideoGrid({
 
   const totalParticipants = users.length;
 
-  const getGridClass = () => {
-    if (fullscreenId) return 'grid-cols-1';
-    if (totalParticipants <= 1) return 'grid-cols-1';
-    if (totalParticipants <= 2) return 'grid-cols-1 md:grid-cols-2';
-    if (totalParticipants <= 4) return 'grid-cols-2';
-    if (totalParticipants <= 6) return 'grid-cols-2 md:grid-cols-3';
-    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+  const getGridLayout = () => {
+    if (fullscreenId) return { cols: 'grid-cols-1', rows: 1 };
+    if (totalParticipants <= 1) return { cols: 'grid-cols-1', rows: 1 };
+    if (totalParticipants <= 2) return { cols: 'grid-cols-1 md:grid-cols-2', rows: 1 };
+    if (totalParticipants <= 4) return { cols: 'grid-cols-2', rows: 2 };
+    if (totalParticipants <= 6) return { cols: 'grid-cols-2 md:grid-cols-3', rows: 2 };
+    if (totalParticipants <= 9) return { cols: 'grid-cols-3', rows: 3 };
+    return { cols: 'grid-cols-3 md:grid-cols-4', rows: Math.ceil(totalParticipants / 4) };
   };
+
+  const gridLayout = getGridLayout();
 
   const handleTileClick = (id: string) => {
     setFullscreenId(fullscreenId === id ? null : id);
@@ -80,8 +83,21 @@ export function VideoGrid({
     }
   }
 
+  // Calculate row height based on number of rows needed
+  const getRowStyle = () => {
+    const rows = gridLayout.rows;
+    if (rows <= 1) return {};
+    // Each row gets equal share of the container height minus gaps
+    return {
+      gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+    };
+  };
+
   return (
-    <div className={`grid ${getGridClass()} gap-2 p-4 h-full auto-rows-fr`}>
+    <div
+      className={`grid ${gridLayout.cols} gap-2 p-4 h-full overflow-hidden`}
+      style={getRowStyle()}
+    >
       {/* Local video */}
       <VideoTile
         stream={localStream}

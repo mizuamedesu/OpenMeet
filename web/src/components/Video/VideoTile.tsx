@@ -53,9 +53,7 @@ export function VideoTile({
 
   return (
     <div
-      className={`relative bg-[hsl(var(--muted))] rounded-lg overflow-hidden cursor-pointer group ${
-        isFullscreen ? 'h-full' : 'aspect-video'
-      } ${borderClass}`}
+      className={`relative bg-[hsl(var(--muted))] rounded-lg overflow-hidden cursor-pointer group h-full ${borderClass}`}
       onClick={onClick}
     >
       {/* Always render video element to maintain srcObject */}
@@ -64,7 +62,7 @@ export function VideoTile({
         autoPlay
         playsInline
         muted={isLocal}
-        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'} ${
+        className={`w-full h-full object-contain ${
           isVideoOff ? 'hidden' : ''
         }`}
       />

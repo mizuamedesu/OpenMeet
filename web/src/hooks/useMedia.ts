@@ -56,6 +56,16 @@ export function useMedia() {
 
   const initializeMedia = useCallback(async (video: boolean = true, audio: boolean = true) => {
     try {
+      // Check if stream already exists (e.g., from preview)
+      const existingStream = webrtcManager.getLocalStreamSync();
+      if (existingStream) {
+        // Apply video/audio state
+        existingStream.getVideoTracks().forEach(track => track.enabled = video);
+        existingStream.getAudioTracks().forEach(track => track.enabled = audio);
+        setLocalStream(existingStream);
+        return existingStream;
+      }
+
       const stream = await webrtcManager.getLocalStream(video, audio);
       setLocalStream(stream);
       return stream;
