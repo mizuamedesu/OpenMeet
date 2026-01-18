@@ -78,23 +78,25 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+      <div className="max-w-md w-full space-y-6">
         {/* SEO-friendly header with h1 */}
         <header className="text-center">
-          <h1 className="text-4xl font-bold mb-2">OpenMeet</h1>
-          <p className="text-[hsl(var(--muted-foreground))] text-lg">
+          <h1 className="text-5xl font-bold mb-2 text-[#0000FF]">
+            OpenMeet
+          </h1>
+          <p className="text-[#FF0000] text-xl font-bold bg-[#FFFF00] inline px-1">
             無料ビデオ会議ツール
           </p>
-          <p className="text-[hsl(var(--muted-foreground))] text-sm mt-1">
+          <p className="text-[#0000FF] text-sm mt-2 font-bold underline decoration-[#FF0000]">
             Zoom・Google Meet代替のオンライン会議
           </p>
         </header>
 
         {/* Main action buttons */}
-        <main className="space-y-4">
+        <main className="space-y-3">
           <Button
-            className="w-full"
+            className="w-full bg-[#FFFF00] hover:bg-[#EEEE00] text-[#0000FF] font-bold text-lg"
             size="lg"
             onClick={() => {
               resetDialogs();
@@ -105,7 +107,7 @@ export function HomePage() {
           </Button>
 
           <Button
-            className="w-full"
+            className="w-full bg-[#FFFF00] hover:bg-[#EEEE00] text-[#0000FF] font-bold text-lg"
             size="lg"
             variant="outline"
             onClick={() => {
@@ -118,73 +120,73 @@ export function HomePage() {
         </main>
 
         {/* Feature highlights for SEO */}
-        <section className="text-center text-sm text-[hsl(var(--muted-foreground))]">
-          <p>エンドツーエンド暗号化で安全。アカウント登録不要。</p>
+        <section className="text-center">
+          <p className="text-[#FF0000] bg-[#90EE90] inline font-bold px-1">エンドツーエンド暗号化で安全。アカウント登録不要。</p>
         </section>
 
         {/* Why free section */}
-        <section className="text-left text-sm text-[hsl(var(--muted-foreground))] space-y-3 pt-4 border-t border-[hsl(var(--border))]">
-          <h2 className="text-base font-semibold text-[hsl(var(--foreground))]">なぜこのサービスは無料なのか？</h2>
-          <div className="mb-4">
+        <section className="text-left text-sm text-black space-y-2 pt-3">
+          <h2 className="text-lg font-bold text-[#0000FF] bg-[#FFFF00] inline px-1 underline decoration-[#FF0000]">なぜこのサービスは無料なのか？</h2>
+          <div className="my-3">
             <img
               src="/独法.png"
               alt="独法"
-              className="w-full max-w-md mx-auto rounded-lg"
+              className="w-full max-w-md mx-auto"
             />
           </div>
           <p>
-            そもそもオンライン通話やビデオ通話はオンラインゲームのように、権威的なサーバーを必要としないため、本来クライアント同士で直接通信が可能です。(P2P)
+            そもそもオンライン通話やビデオ通話はオンラインゲームのように、権威的なサーバーを必要としないため、本来クライアント同士で直接通信が可能です。<span className="text-[#FF0000] font-bold bg-[#FFFF00]">(P2P)</span>
           </p>
           <p>
-            又WebRTCを用いればP2Pの実装もたやすく、サーバーがやることはせいぜいUDPパンチホール程度しかありません。要はそこら辺のオンラインゲームに比べてはるかに少ない計算リソースとネットワーク帯域で実現できるわけです。
+            又<span className="text-[#0000FF] font-bold">WebRTC</span>を用いればP2Pの実装もたやすく、サーバーがやることはせいぜいUDPパンチホール程度しかありません。要はそこら辺のオンラインゲームに比べて<span className="text-[#FF0000] font-bold underline bg-[#FFFF00]">はるかに少ない計算リソースとネットワーク帯域</span>で実現できるわけです。
           </p>
           <p>
-            それなのにGoogleMeetやZoom、Skypeは非常に高い料金を未だに要求します。私はコンピューターサイエンスを学ぶあまりお金のない大学生のため、これに非常に怒りを覚えていました。そこでそこらへんに落ちていたパソコンパーツで作成したサーバーでシグナリングと、TURNを行うこのWebアプリをClaudeCodeを用いて作成しました。
+            それなのに<span className="text-[#0000FF] font-bold">GoogleMeet</span>や<span className="text-[#0000FF] font-bold">Zoom</span>、<span className="text-[#0000FF] font-bold">Skype</span>は<span className="bg-[#FFFF00] text-[#FF0000] font-bold">非常に高い料金</span>を未だに要求します。私はコンピューターサイエンスを学ぶあまりお金のない大学生のため、これに<span className="text-[#FF0000] font-bold text-base bg-[#FFFF00]">非常に怒り</span>を覚えていました。そこでそこらへんに落ちていたパソコンパーツで作成したサーバーでシグナリングと、TURNを行うこのWebアプリを<span className="text-[#0000FF] font-bold">ClaudeCode</span>を用いて作成しました。
           </p>
           <p>
-            二重NAT下でも中継して接続できるようにするTURNは、大学で我々がやっている大変インチキなインフラ、
+            二重NAT下でも中継して接続できるようにするTURNは、大学で我々がやっている<span className="text-[#FF0000] font-bold bg-[#FFFF00]">大変インチキなインフラ</span>、
             <a
               href="https://ultra.coins.tsukuba.ac.jp/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-[hsl(var(--foreground))]"
+              className="text-[#0000FF] font-bold underline"
             >
               Ultra-Coins
             </a>
             の上に立っています。
           </p>
-          <div className="mt-4">
+          <div className="mt-3">
             <img
               src="/server.jpg"
               alt="サーバー"
-              className="w-full max-w-md mx-auto rounded-lg border border-[hsl(var(--border))]"
+              className="w-full max-w-md mx-auto"
             />
-            <p className="text-xs text-center mt-2">
-              実際にこのアプリのサーバー部分を担当しているPC（フロントはCloudflare Pages）。Ryzen 7 2700x、メモリ32GBとかの昔使ってたやつです。
+            <p className="text-xs text-center mt-1 text-[#FF0000] font-bold">
+              実際にこのアプリのサーバー部分を担当しているPC（フロントはCloudflare Pages）。<span className="text-[#0000FF]">Ryzen 7 2700x</span>、<span className="text-[#0000FF]">メモリ32GB</span>とかの昔使ってたやつです。
             </p>
           </div>
         </section>
 
         {/* Footer with links */}
-        <footer className="text-center text-xs text-[hsl(var(--muted-foreground))] space-y-1 pt-4 border-t border-[hsl(var(--border))]">
-          <p>
+        <footer className="text-center text-xs space-y-1 pt-3">
+          <p className="text-[#0000FF] font-bold">
             <a
               href="https://github.com/mizuamedesu/OpenMeet"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-[hsl(var(--foreground))]"
+              className="text-[#FF0000] underline"
             >
               オープンソース
             </a>
-            {' '}- 自分のサーバーでホスト可能
+            {' '}- <span className="bg-[#90EE90]">自分のサーバーでホスト可能</span>
           </p>
-          <p>
+          <p className="text-[#0000FF] font-bold">
             開発者:{' '}
             <a
               href="https://mizuame.works/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-[hsl(var(--foreground))]"
+              className="text-[#FF0000] underline"
             >
               みずあめ
             </a>
