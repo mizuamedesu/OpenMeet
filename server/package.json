@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.9",
+    "@types/selfsigned": "^2.0.4",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
@@ -23,6 +24,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "nanoid": "^5.1.6",
+    "selfsigned": "^5.5.0",
     "socket.io": "^4.8.3"
   }
 }

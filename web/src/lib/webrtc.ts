@@ -3,7 +3,11 @@ import type { IceServer } from './types';
 export class WebRTCManager {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private localStream: MediaStream | null = null;
-  private iceServers: IceServer[] = [];
+  // Default STUN servers for NAT traversal
+  private iceServers: IceServer[] = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ];
   private onTrack: ((peerId: string, stream: MediaStream) => void) | null = null;
   private onIceCandidate: ((peerId: string, candidate: RTCIceCandidateInit) => void) | null = null;
   private onConnectionStateChange: ((peerId: string, state: RTCPeerConnectionState) => void) | null = null;
@@ -27,6 +31,10 @@ export class WebRTCManager {
       return this.localStream;
     }
 
+    if (!navigator.mediaDevices) {
+      throw new Error('MediaDevices API not available. Use HTTPS or localhost.');
+    }
+
     this.localStream = await navigator.mediaDevices.getUserMedia({
       video: video ? { width: 1280, height: 720 } : false,
       audio: audio ? { echoCancellation: true, noiseSuppression: true } : false,
@@ -46,9 +54,6 @@ export class WebRTCManager {
   createPeerConnection(peerId: string): RTCPeerConnection {
     const config: RTCConfiguration = {
       iceServers: this.iceServers,
-      // Force encryption
-      // @ts-expect-error - encodedInsertableStreams is not in the type definition
-      encodedInsertableStreams: true,
     };
 
     const pc = new RTCPeerConnection(config);
@@ -60,8 +65,10 @@ export class WebRTCManager {
     };
 
     pc.ontrack = (event) => {
-      if (this.onTrack && event.streams[0]) {
-        this.onTrack(peerId, event.streams[0]);
+      if (this.onTrack) {
+        // Use existing stream or create a new one with the track
+        const stream = event.streams[0] || new MediaStream([event.track]);
+        this.onTrack(peerId, stream);
       }
     };
 
@@ -190,6 +197,10 @@ export class WebRTCManager {
   }
 
   async startScreenShare(): Promise<MediaStream> {
+    if (!navigator.mediaDevices) {
+      throw new Error('MediaDevices API not available. Use HTTPS or localhost.');
+    }
+
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
       audio: false,

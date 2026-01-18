@@ -19,13 +19,24 @@ export function useMedia() {
   } = useRoomStore();
 
   useEffect(() => {
+    // Check if mediaDevices API is available (requires secure context: HTTPS or localhost)
+    if (!navigator.mediaDevices) {
+      console.warn('MediaDevices API not available. Use HTTPS or localhost.');
+      return;
+    }
+
     // Get available devices
     navigator.mediaDevices.enumerateDevices().then(setDevices);
 
     // Listen for device changes
-    navigator.mediaDevices.addEventListener('devicechange', () => {
+    const handleDeviceChange = () => {
       navigator.mediaDevices.enumerateDevices().then(setDevices);
-    });
+    };
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+    };
   }, []);
 
   const initializeMedia = useCallback(async (video: boolean = true, audio: boolean = true) => {
@@ -74,6 +85,10 @@ export function useMedia() {
 
   const stopScreenShare = useCallback(async () => {
     try {
+      if (!navigator.mediaDevices) {
+        console.error('MediaDevices API not available');
+        return;
+      }
       // Get camera stream and replace
       const cameraStream = await navigator.mediaDevices.getUserMedia({
         video: { width: 1280, height: 720 },
@@ -87,6 +102,11 @@ export function useMedia() {
 
   const changeDevice = useCallback(async (deviceId: string, kind: 'audio' | 'video') => {
     try {
+      if (!navigator.mediaDevices) {
+        console.error('MediaDevices API not available');
+        return;
+      }
+
       const constraints: MediaStreamConstraints = {};
 
       if (kind === 'audio') {

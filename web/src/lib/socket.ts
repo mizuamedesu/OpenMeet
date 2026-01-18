@@ -1,6 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 
-const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL || 'http://localhost:4000';
+// Use same host as the web app, but port 4000 for signaling server
+const getSignalingUrl = () => {
+  if (import.meta.env.VITE_SIGNALING_URL) {
+    return import.meta.env.VITE_SIGNALING_URL;
+  }
+  // In development, use the same hostname but port 4000
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}:4000`;
+};
+
+const SIGNALING_URL = getSignalingUrl();
 
 let socket: Socket | null = null;
 
