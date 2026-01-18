@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { SpeakerOffIcon, CameraIcon } from '@radix-ui/react-icons';
+import { SpeakerOffIcon, CameraIcon, EnterFullScreenIcon, ExitFullScreenIcon } from '@radix-ui/react-icons';
 
 interface VideoTileProps {
   stream: MediaStream | null;
@@ -8,6 +8,8 @@ interface VideoTileProps {
   isMuted?: boolean;
   isVideoOff?: boolean;
   isAdmin?: boolean;
+  isFullscreen?: boolean;
+  onClick?: () => void;
 }
 
 export function VideoTile({
@@ -17,6 +19,8 @@ export function VideoTile({
   isMuted = false,
   isVideoOff = false,
   isAdmin = false,
+  isFullscreen = false,
+  onClick,
 }: VideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -27,22 +31,40 @@ export function VideoTile({
   }, [stream]);
 
   return (
-    <div className="relative aspect-video bg-[hsl(var(--muted))] rounded-lg overflow-hidden">
+    <div
+      className={`relative bg-[hsl(var(--muted))] rounded-lg overflow-hidden cursor-pointer group ${
+        isFullscreen ? 'h-full' : 'aspect-video'
+      }`}
+      onClick={onClick}
+    >
       {stream && !isVideoOff ? (
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted={isLocal}
-          className="w-full h-full object-cover"
+          className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'}`}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-20 h-20 rounded-full bg-[hsl(var(--primary))] flex items-center justify-center text-3xl font-semibold text-[hsl(var(--primary-foreground))]">
+          <div className={`rounded-full bg-[hsl(var(--primary))] flex items-center justify-center font-semibold text-[hsl(var(--primary-foreground))] ${
+            isFullscreen ? 'w-32 h-32 text-5xl' : 'w-20 h-20 text-3xl'
+          }`}>
             {username.charAt(0).toUpperCase()}
           </div>
         </div>
       )}
+
+      {/* Fullscreen indicator */}
+      <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="p-1.5 bg-black/60 rounded-full">
+          {isFullscreen ? (
+            <ExitFullScreenIcon className="w-4 h-4 text-white" />
+          ) : (
+            <EnterFullScreenIcon className="w-4 h-4 text-white" />
+          )}
+        </div>
+      </div>
 
       {/* Status indicators */}
       <div className="absolute top-2 right-2 flex gap-1">
@@ -60,12 +82,21 @@ export function VideoTile({
 
       {/* Name tag */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1">
-        <span className="px-2 py-1 bg-black/60 rounded text-xs text-white">
+        <span className={`px-2 py-1 bg-black/60 rounded text-white ${isFullscreen ? 'text-sm' : 'text-xs'}`}>
           {username}
           {isLocal && ' (You)'}
           {isAdmin && ' ★'}
         </span>
       </div>
+
+      {/* Click to expand hint */}
+      {!isFullscreen && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <span className="px-3 py-1.5 bg-black/70 rounded-full text-white text-xs">
+            Click to expand
+          </span>
+        </div>
+      )}
     </div>
   );
 }

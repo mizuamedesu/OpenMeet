@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { VideoTile } from './VideoTile';
 import type { User } from '../../lib/types';
 
@@ -19,15 +20,61 @@ export function VideoGrid({
   users,
   localUser,
 }: VideoGridProps) {
+  const [fullscreenId, setFullscreenId] = useState<string | null>(null);
+
   const totalParticipants = users.length;
 
   const getGridClass = () => {
+    if (fullscreenId) return 'grid-cols-1';
     if (totalParticipants <= 1) return 'grid-cols-1';
     if (totalParticipants <= 2) return 'grid-cols-1 md:grid-cols-2';
     if (totalParticipants <= 4) return 'grid-cols-2';
     if (totalParticipants <= 6) return 'grid-cols-2 md:grid-cols-3';
     return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
   };
+
+  const handleTileClick = (id: string) => {
+    setFullscreenId(fullscreenId === id ? null : id);
+  };
+
+  // If fullscreen mode, only show the selected tile
+  if (fullscreenId) {
+    const isLocalFullscreen = fullscreenId === 'local';
+
+    if (isLocalFullscreen) {
+      return (
+        <div className="relative h-full p-4">
+          <VideoTile
+            stream={localStream}
+            username={localUser.username}
+            isLocal
+            isMuted={!localUser.isAudioEnabled}
+            isVideoOff={!localUser.isVideoEnabled}
+            isAdmin={localUser.isAdmin}
+            isFullscreen
+            onClick={() => handleTileClick('local')}
+          />
+        </div>
+      );
+    }
+
+    const fullscreenUser = users.find(u => u.id === fullscreenId);
+    if (fullscreenUser) {
+      return (
+        <div className="relative h-full p-4">
+          <VideoTile
+            stream={remoteStreams.get(fullscreenUser.id) || null}
+            username={fullscreenUser.username}
+            isMuted={fullscreenUser.isMuted}
+            isVideoOff={fullscreenUser.isVideoOff}
+            isAdmin={fullscreenUser.isAdmin}
+            isFullscreen
+            onClick={() => handleTileClick(fullscreenUser.id)}
+          />
+        </div>
+      );
+    }
+  }
 
   return (
     <div className={`grid ${getGridClass()} gap-2 p-4 h-full auto-rows-fr`}>
@@ -39,6 +86,7 @@ export function VideoGrid({
         isMuted={!localUser.isAudioEnabled}
         isVideoOff={!localUser.isVideoEnabled}
         isAdmin={localUser.isAdmin}
+        onClick={() => handleTileClick('local')}
       />
 
       {/* Remote videos */}
@@ -52,6 +100,7 @@ export function VideoGrid({
             isMuted={user.isMuted}
             isVideoOff={user.isVideoOff}
             isAdmin={user.isAdmin}
+            onClick={() => handleTileClick(user.id)}
           />
         ))}
     </div>
