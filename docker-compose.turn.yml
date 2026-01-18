@@ -16,11 +16,8 @@ services:
       - "49152-49200:49152-49200/udp"
     volumes:
       - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
-    entrypoint: /bin/sh
     command:
       - -c
-      - |
-        EXTERNAL_IP=$$(wget -4 -qO- ifconfig.me 2>/dev/null || wget -qO- ifconfig.me || echo "127.0.0.1")
-        echo "Detected external IP: $$EXTERNAL_IP"
-        exec turnserver -c /etc/coturn/turnserver.conf --external-ip=$$EXTERNAL_IP
+      - /etc/coturn/turnserver.conf
+      - --external-ip=${EXTERNAL_IP}
     restart: unless-stopped
