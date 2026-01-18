@@ -299,6 +299,24 @@ export function setupSocketHandlers(io: TypedServer, config: ServerConfig): void
       });
     });
 
+    // Self media status update (user toggling their own mute/video)
+    socket.on('media:status', (data) => {
+      const roomId = socket.data.roomId;
+      const userId = socket.data.userId;
+      if (!roomId || !userId) return;
+
+      roomManager.updateUser(roomId, userId, {
+        isMuted: data.isMuted,
+        isVideoOff: data.isVideoOff,
+      });
+
+      // Broadcast to other users in the room
+      socket.to(roomId).emit('admin:user-updated', {
+        userId: userId,
+        updates: { isMuted: data.isMuted, isVideoOff: data.isVideoOff },
+      });
+    });
+
     // Disconnect
     socket.on('disconnect', () => {
       handleDisconnect(socket);

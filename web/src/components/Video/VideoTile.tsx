@@ -9,6 +9,7 @@ interface VideoTileProps {
   isVideoOff?: boolean;
   isAdmin?: boolean;
   isFullscreen?: boolean;
+  isSpeaking?: boolean;
   onClick?: () => void;
 }
 
@@ -20,6 +21,7 @@ export function VideoTile({
   isVideoOff = false,
   isAdmin = false,
   isFullscreen = false,
+  isSpeaking = false,
   onClick,
 }: VideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -30,22 +32,29 @@ export function VideoTile({
     }
   }, [stream]);
 
+  const borderClass = isSpeaking
+    ? 'ring-2 ring-green-500 ring-offset-2 ring-offset-[hsl(var(--background))]'
+    : '';
+
   return (
     <div
       className={`relative bg-[hsl(var(--muted))] rounded-lg overflow-hidden cursor-pointer group ${
         isFullscreen ? 'h-full' : 'aspect-video'
-      }`}
+      } ${borderClass}`}
       onClick={onClick}
     >
-      {stream && !isVideoOff ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={isLocal}
-          className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'}`}
-        />
-      ) : (
+      {/* Always render video element to maintain srcObject */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={isLocal}
+        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'} ${
+          isVideoOff ? 'hidden' : ''
+        }`}
+      />
+      {/* Avatar when video is off */}
+      {isVideoOff && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className={`rounded-full bg-[hsl(var(--primary))] flex items-center justify-center font-semibold text-[hsl(var(--primary-foreground))] ${
             isFullscreen ? 'w-32 h-32 text-5xl' : 'w-20 h-20 text-3xl'

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { webrtcManager } from '../lib/webrtc';
 import { useRoomStore } from '../stores/roomStore';
+import { getSocket } from '../lib/socket';
 
 export function useMedia() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -62,7 +63,11 @@ export function useMedia() {
     const newState = !isAudioEnabled;
     setAudioEnabled(newState);
     webrtcManager.toggleAudio(newState);
-  }, [isAudioEnabled, isMutedByAdmin, setAudioEnabled]);
+
+    // Sync status to other users
+    const socket = getSocket();
+    socket.emit('media:status', { isMuted: !newState, isVideoOff: !isVideoEnabled });
+  }, [isAudioEnabled, isVideoEnabled, isMutedByAdmin, setAudioEnabled]);
 
   const toggleVideo = useCallback(() => {
     if (isVideoOffByAdmin) return;
@@ -70,7 +75,11 @@ export function useMedia() {
     const newState = !isVideoEnabled;
     setVideoEnabled(newState);
     webrtcManager.toggleVideo(newState);
-  }, [isVideoEnabled, isVideoOffByAdmin, setVideoEnabled]);
+
+    // Sync status to other users
+    const socket = getSocket();
+    socket.emit('media:status', { isMuted: !isAudioEnabled, isVideoOff: !newState });
+  }, [isAudioEnabled, isVideoEnabled, isVideoOffByAdmin, setVideoEnabled]);
 
   const startScreenShare = useCallback(async () => {
     try {

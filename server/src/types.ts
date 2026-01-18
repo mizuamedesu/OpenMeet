@@ -49,6 +49,8 @@ export interface ClientToServerEvents {
   'admin:chat-permission': (data: { targetId: string; canChat: boolean }) => void;
   'admin:transfer': (data: { targetId: string }) => void;
   'admin:set-priority': (data: { targetId: string; priority: number }) => void;
+
+  'media:status': (data: { isMuted: boolean; isVideoOff: boolean }) => void;
 }
 
 export interface ServerToClientEvents {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { VideoTile } from './VideoTile';
+import { useAudioLevels } from '../../hooks/useAudioLevels';
 import type { User } from '../../lib/types';
 
 interface VideoGridProps {
@@ -21,6 +22,7 @@ export function VideoGrid({
   localUser,
 }: VideoGridProps) {
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
+  const speakingStates = useAudioLevels(localStream, remoteStreams);
 
   const totalParticipants = users.length;
 
@@ -52,6 +54,7 @@ export function VideoGrid({
             isVideoOff={!localUser.isVideoEnabled}
             isAdmin={localUser.isAdmin}
             isFullscreen
+            isSpeaking={speakingStates.get('local') || false}
             onClick={() => handleTileClick('local')}
           />
         </div>
@@ -69,6 +72,7 @@ export function VideoGrid({
             isVideoOff={fullscreenUser.isVideoOff}
             isAdmin={fullscreenUser.isAdmin}
             isFullscreen
+            isSpeaking={speakingStates.get(fullscreenUser.id) || false}
             onClick={() => handleTileClick(fullscreenUser.id)}
           />
         </div>
@@ -86,6 +90,7 @@ export function VideoGrid({
         isMuted={!localUser.isAudioEnabled}
         isVideoOff={!localUser.isVideoEnabled}
         isAdmin={localUser.isAdmin}
+        isSpeaking={speakingStates.get('local') || false}
         onClick={() => handleTileClick('local')}
       />
 
@@ -100,6 +105,7 @@ export function VideoGrid({
             isMuted={user.isMuted}
             isVideoOff={user.isVideoOff}
             isAdmin={user.isAdmin}
+            isSpeaking={speakingStates.get(user.id) || false}
             onClick={() => handleTileClick(user.id)}
           />
         ))}

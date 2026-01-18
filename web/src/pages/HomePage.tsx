@@ -125,7 +125,7 @@ export function HomePage() {
               rel="noopener noreferrer"
               className="underline hover:text-[hsl(var(--foreground))]"
             >
-              Ultra COINS Lab, University of Tsukuba
+              Ultra COINS
             </a>
           </p>
           <p>
