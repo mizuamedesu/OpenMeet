@@ -32,12 +32,20 @@ export function useMedia() {
       return;
     }
 
-    // Get available devices
-    navigator.mediaDevices.enumerateDevices().then(setDevices);
+    // Get available devices (wrapped in try-catch for mobile browser restrictions)
+    const getDevices = async () => {
+      try {
+        const deviceList = await navigator.mediaDevices.enumerateDevices();
+        setDevices(deviceList);
+      } catch (e) {
+        console.warn('Failed to enumerate devices:', e);
+      }
+    };
+    getDevices();
 
     // Listen for device changes
     const handleDeviceChange = () => {
-      navigator.mediaDevices.enumerateDevices().then(setDevices);
+      getDevices();
     };
     navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
 

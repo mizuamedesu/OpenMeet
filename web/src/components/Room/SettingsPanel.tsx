@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 
@@ -139,19 +140,19 @@ export function SettingsPanel({
           <GearIcon className="w-5 h-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>設定</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto flex-1">
           {/* Video Preview */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Video Preview</label>
+            <label className="text-sm font-medium">プレビュー</label>
             <div className="relative aspect-video bg-[hsl(var(--muted))] rounded-lg overflow-hidden">
               {isScreenSharing ? (
                 <div className="absolute inset-0 flex items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">
-                  Screen sharing active
+                  画面共有中
                 </div>
               ) : localStream ? (
                 <video
@@ -163,7 +164,7 @@ export function SettingsPanel({
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">
-                  No video
+                  映像なし
                 </div>
               )}
             </div>
@@ -171,7 +172,7 @@ export function SettingsPanel({
 
           {/* Microphone */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Microphone</label>
+            <label className="text-sm font-medium">マイク</label>
             <select
               value={selectedAudioInput}
               onChange={(e) => handleAudioInputChange(e.target.value)}
@@ -186,7 +187,7 @@ export function SettingsPanel({
 
             {/* Audio Level */}
             <div className="space-y-1">
-              <div className="text-xs text-[hsl(var(--muted-foreground))]">Input Level</div>
+              <div className="text-xs text-[hsl(var(--muted-foreground))]">入力レベル</div>
               <div className="h-2 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 transition-all duration-75"
@@ -198,7 +199,7 @@ export function SettingsPanel({
 
           {/* Camera */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Camera</label>
+            <label className="text-sm font-medium">カメラ</label>
             <select
               value={selectedVideoInput}
               onChange={(e) => handleVideoInputChange(e.target.value)}
@@ -213,7 +214,7 @@ export function SettingsPanel({
             </select>
             {isScreenSharing && (
               <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                Camera selection disabled while screen sharing
+                画面共有中はカメラを変更できません
               </p>
             )}
           </div>
@@ -221,7 +222,7 @@ export function SettingsPanel({
           {/* Speaker (if supported) */}
           {audioOutputs.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Speaker</label>
+              <label className="text-sm font-medium">スピーカー</label>
               <select
                 className="w-full h-10 px-3 rounded-md border border-[hsl(var(--input))] bg-transparent text-sm"
               >
@@ -236,23 +237,29 @@ export function SettingsPanel({
 
           {/* Status */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Status</label>
+            <label className="text-sm font-medium">現在の状態</label>
             <div className="text-sm text-[hsl(var(--muted-foreground))] space-y-1">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${isScreenSharing ? 'bg-green-500' : 'bg-gray-400'}`} />
-                Screen sharing: {isScreenSharing ? 'Active' : 'Off'}
+                画面共有: {isScreenSharing ? 'オン' : 'オフ'}
               </div>
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${localStream?.getVideoTracks()[0]?.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
-                Camera: {localStream?.getVideoTracks()[0]?.enabled ? 'On' : 'Off'}
+                カメラ: {localStream?.getVideoTracks()[0]?.enabled ? 'オン' : 'オフ'}
               </div>
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${localStream?.getAudioTracks()[0]?.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
-                Microphone: {localStream?.getAudioTracks()[0]?.enabled ? 'On' : 'Off'}
+                マイク: {localStream?.getAudioTracks()[0]?.enabled ? 'オン' : 'オフ'}
               </div>
             </div>
           </div>
         </div>
+
+        <DialogFooter className="border-t border-[hsl(var(--border))] pt-4">
+          <Button onClick={() => setOpen(false)} className="w-full">
+            保存して閉じる
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

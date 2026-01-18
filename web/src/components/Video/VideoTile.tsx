@@ -29,6 +29,21 @@ export function VideoTile({
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
+
+      // Handle autoplay restrictions on mobile browsers
+      const playVideo = async () => {
+        if (!videoRef.current) return;
+
+        try {
+          await videoRef.current.play();
+        } catch (e) {
+          // Autoplay was prevented - this is common on mobile browsers
+          // The video will start playing after user interaction
+          console.warn('Video autoplay prevented:', e);
+        }
+      };
+
+      playVideo();
     }
   }, [stream]);
 

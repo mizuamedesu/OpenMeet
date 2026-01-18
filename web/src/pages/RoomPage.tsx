@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Link2Icon, CheckIcon } from '@radix-ui/react-icons';
+import { Link2Icon, CheckIcon, CameraIcon, SpeakerLoudIcon } from '@radix-ui/react-icons';
 import { VideoGrid } from '../components/Video/VideoGrid';
 import { ChatPanel } from '../components/Chat/ChatPanel';
 import { ControlBar } from '../components/Room/ControlBar';
@@ -8,9 +8,23 @@ import { ParticipantsList } from '../components/Room/ParticipantsList';
 import { SettingsPanel } from '../components/Room/SettingsPanel';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../components/ui/Dialog';
 import { useRoom } from '../hooks/useRoom';
 import { useMedia } from '../hooks/useMedia';
 import { useRoomStore } from '../stores/roomStore';
+
+// iOS detection
+const isIOS = () => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+};
 
 export function RoomPage() {
   const { roomId: urlRoomId } = useParams<{ roomId: string }>();
@@ -62,6 +76,10 @@ export function RoomPage() {
   const [joinError, setJoinError] = useState('');
   const [isJoining, setIsJoining] = useState(false);
 
+  // Media permission dialog state
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+
   const copyRoomLink = async () => {
     const url = window.location.href;
     await navigator.clipboard.writeText(url);
@@ -82,15 +100,36 @@ export function RoomPage() {
       return;
     }
 
-    setIsJoining(true);
     setJoinError('');
+    setPermissionError(null);
+    setShowPermissionDialog(true);
+  };
+
+  const handlePermissionGranted = async () => {
+    setIsJoining(true);
+    setPermissionError(null);
 
     try {
       await initializeMedia();
       await joinRoom(urlRoomId!, joinUsername, joinPassword || undefined);
+      setShowPermissionDialog(false);
       setShowJoinForm(false);
     } catch (err) {
-      setJoinError(err instanceof Error ? err.message : 'Failed to join room');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get media';
+
+      // Check if it's a permission error on iOS
+      if (isIOS() && (
+        errorMessage.includes('not allowed') ||
+        errorMessage.includes('Permission denied') ||
+        errorMessage.includes('NotAllowedError')
+      )) {
+        setPermissionError(
+          'カメラ・マイクへのアクセスが許可されていません。\n\n' +
+          'iOSの「設定」→「Chrome」→「カメラ」と「マイク」をオンにしてください。'
+        );
+      } else {
+        setPermissionError(errorMessage);
+      }
     } finally {
       setIsJoining(false);
     }
@@ -161,11 +200,49 @@ export function RoomPage() {
                 onClick={handleJoinFromLink}
                 disabled={isJoining}
               >
-                {isJoining ? 'Joining...' : 'Join Meeting'}
+                Join Meeting
               </Button>
             </div>
           </div>
         </div>
+
+        {/* Media Permission Dialog */}
+        <Dialog open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CameraIcon className="w-5 h-5" />
+                <SpeakerLoudIcon className="w-5 h-5" />
+                カメラとマイクの使用
+              </DialogTitle>
+              <DialogDescription>
+                ミーティングに参加するには、カメラとマイクへのアクセスを許可してください。
+              </DialogDescription>
+            </DialogHeader>
+
+            {permissionError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                <p className="text-sm text-red-500 whitespace-pre-line">{permissionError}</p>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setShowPermissionDialog(false)}
+                disabled={isJoining}
+              >
+                キャンセル
+              </Button>
+              <Button
+                onClick={handlePermissionGranted}
+                disabled={isJoining}
+              >
+                {isJoining ? '接続中...' : '許可して参加'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
