@@ -109,7 +109,6 @@ export function HomePage() {
           <Button
             className="w-full bg-[#FFFF00] hover:bg-[#EEEE00] text-[#0000FF] font-bold text-lg"
             size="lg"
-            variant="outline"
             onClick={() => {
               resetDialogs();
               setShowJoinDialog(true);
