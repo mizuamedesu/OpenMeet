@@ -78,7 +78,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white" style={{ fontFamily: '"Meiryo UI", Meiryo, sans-serif' }}>
       <div className="max-w-md w-full space-y-6">
         {/* SEO-friendly header with h1 */}
         <header className="text-center">
