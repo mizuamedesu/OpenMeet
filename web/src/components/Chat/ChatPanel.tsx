@@ -101,6 +101,7 @@ export function ChatPanel() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    className="flex-shrink-0"
                     onClick={() => downloadFile(transfer.blob!, transfer.fileName)}
                     title="ダウンロード"
                   >

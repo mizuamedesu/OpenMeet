@@ -343,17 +343,6 @@ export function useRoom() {
         timestamp: Date.now(),
       });
 
-      // Read file as ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      // Convert to base64
-      let binaryString = '';
-      for (let i = 0; i < uint8Array.length; i++) {
-        binaryString += String.fromCharCode(uint8Array[i]);
-      }
-      const base64 = btoa(binaryString);
-
       // Send metadata to all peers
       const metadata: FileTransferMetadata = {
         id: transferId,
@@ -370,11 +359,40 @@ export function useRoom() {
         payload: metadata,
       });
 
-      // Send chunks
+      // Helper to convert ArrayBuffer slice to base64
+      const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+          binary += String.fromCharCode(...chunk);
+        }
+        return btoa(binary);
+      };
+
+      // Wait for DataChannel buffer to drain
+      const waitForBuffer = async (): Promise<void> => {
+        const maxBufferedAmount = 1024 * 1024; // 1MB threshold
+        const channels = webrtcManager.getAllDataChannels();
+
+        for (const channel of channels) {
+          while (channel.bufferedAmount > maxBufferedAmount) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+        }
+      };
+
+      // Send chunks with streaming read
       for (let i = 0; i < totalChunks; i++) {
         const start = i * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, base64.length);
-        const chunkData = base64.slice(start, end);
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const blob = file.slice(start, end);
+        const buffer = await blob.arrayBuffer();
+        const chunkData = arrayBufferToBase64(buffer);
+
+        // Wait if buffer is too full
+        await waitForBuffer();
 
         webrtcManager.broadcastDataChannelMessage({
           type: 'file-chunk',
@@ -385,12 +403,16 @@ export function useRoom() {
           },
         });
 
-        // Update own progress
-        const progress = Math.round(((i + 1) / totalChunks) * 100);
-        updateFileTransfer(transferId, { progress });
+        // Update progress (throttle to every 5 chunks or last chunk)
+        if (i % 5 === 0 || i === totalChunks - 1) {
+          const progress = Math.round(((i + 1) / totalChunks) * 100);
+          updateFileTransfer(transferId, { progress });
+        }
 
-        // Small delay to prevent overwhelming the channel
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        // Yield to UI thread periodically
+        if (i % 10 === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
       }
 
       // Send completion

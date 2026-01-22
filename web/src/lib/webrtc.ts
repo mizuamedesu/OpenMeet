@@ -161,6 +161,12 @@ export class WebRTCManager {
     }
   }
 
+  getAllDataChannels(): RTCDataChannel[] {
+    return Array.from(this.dataChannels.values()).filter(
+      (ch) => ch.readyState === 'open'
+    );
+  }
+
   getPeerConnection(peerId: string): RTCPeerConnection | undefined {
     return this.peerConnections.get(peerId);
   }
