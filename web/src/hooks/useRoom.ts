@@ -6,7 +6,7 @@ import { useRoomStore } from '../stores/roomStore';
 import { nanoid } from 'nanoid';
 import type { DataChannelMessage, FileTransferMetadata } from '../lib/types';
 
-const CHUNK_SIZE = 16 * 1024; // 16KB chunks
+const CHUNK_SIZE = 12 * 1024; // 12KB chunks (becomes ~16KB after base64)
 
 interface RoomResponse {
   success: boolean;
@@ -246,20 +246,32 @@ export function useRoom() {
         const pending = pendingChunks.current.get(transferId);
         if (!pending) return;
 
-        // Reassemble file from chunks
-        const chunks: string[] = [];
+        // Decode each base64 chunk separately and combine
+        const decodedChunks: Uint8Array[] = [];
+        let totalLength = 0;
+
         for (let i = 0; i < pending.metadata.totalChunks; i++) {
           const chunk = pending.chunks.get(i);
-          if (chunk) chunks.push(chunk);
+          if (chunk) {
+            const binaryString = atob(chunk);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let j = 0; j < binaryString.length; j++) {
+              bytes[j] = binaryString.charCodeAt(j);
+            }
+            decodedChunks.push(bytes);
+            totalLength += bytes.length;
+          }
         }
 
-        // Convert base64 chunks back to blob
-        const binaryString = atob(chunks.join(''));
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+        // Combine all decoded chunks
+        const combined = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of decodedChunks) {
+          combined.set(chunk, offset);
+          offset += chunk.length;
         }
-        const blob = new Blob([bytes], { type: pending.metadata.fileType });
+
+        const blob = new Blob([combined], { type: pending.metadata.fileType });
 
         updateFileTransfer(transferId, {
           progress: 100,
