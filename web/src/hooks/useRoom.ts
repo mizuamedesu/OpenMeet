@@ -1,9 +1,12 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSocket, connectSocket, disconnectSocket } from '../lib/socket';
 import { webrtcManager } from '../lib/webrtc';
 import { useRoomStore } from '../stores/roomStore';
 import { nanoid } from 'nanoid';
+import type { DataChannelMessage, FileTransferMetadata } from '../lib/types';
+
+const CHUNK_SIZE = 16 * 1024; // 16KB chunks
 
 interface RoomResponse {
   success: boolean;
@@ -38,11 +41,16 @@ export function useRoom() {
     setVideoOffByAdmin,
     setCanChat,
     addMessage,
+    addFileTransfer,
+    updateFileTransfer,
     setRemoteStream,
     removeRemoteStream,
     setIceServers,
     reset,
   } = useRoomStore();
+
+  // Store incoming file chunks
+  const pendingChunks = useRef<Map<string, { metadata: FileTransferMetadata; chunks: Map<number, string> }>>(new Map());
 
   const socket = getSocket();
 
@@ -168,6 +176,12 @@ export function useRoom() {
           createOfferForPeer(peerId);
         }
       },
+      onDataChannelMessage: (peerId, message) => {
+        handleDataChannelMessage(peerId, message);
+      },
+      onDataChannelOpen: (peerId) => {
+        console.log(`Data channel opened with peer ${peerId}`);
+      },
     });
 
     return () => {
@@ -191,6 +205,72 @@ export function useRoom() {
   const createOfferForPeer = async (peerId: string) => {
     const offer = await webrtcManager.createOffer(peerId);
     socket.emit('webrtc:offer', { targetId: peerId, offer });
+  };
+
+  const handleDataChannelMessage = (_peerId: string, message: DataChannelMessage) => {
+    switch (message.type) {
+      case 'file-metadata': {
+        const metadata = message.payload;
+        pendingChunks.current.set(metadata.id, {
+          metadata,
+          chunks: new Map(),
+        });
+        // Add to UI as pending transfer
+        addFileTransfer({
+          id: metadata.id,
+          fileName: metadata.fileName,
+          fileSize: metadata.fileSize,
+          fileType: metadata.fileType,
+          fromId: metadata.fromId,
+          fromUsername: metadata.fromUsername,
+          progress: 0,
+          status: 'transferring',
+          timestamp: Date.now(),
+        });
+        break;
+      }
+      case 'file-chunk': {
+        const { transferId, chunkIndex, data } = message.payload;
+        const pending = pendingChunks.current.get(transferId);
+        if (!pending) return;
+
+        pending.chunks.set(chunkIndex, data);
+
+        // Update progress
+        const progress = Math.round((pending.chunks.size / pending.metadata.totalChunks) * 100);
+        updateFileTransfer(transferId, { progress });
+        break;
+      }
+      case 'file-complete': {
+        const { transferId } = message.payload;
+        const pending = pendingChunks.current.get(transferId);
+        if (!pending) return;
+
+        // Reassemble file from chunks
+        const chunks: string[] = [];
+        for (let i = 0; i < pending.metadata.totalChunks; i++) {
+          const chunk = pending.chunks.get(i);
+          if (chunk) chunks.push(chunk);
+        }
+
+        // Convert base64 chunks back to blob
+        const binaryString = atob(chunks.join(''));
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: pending.metadata.fileType });
+
+        updateFileTransfer(transferId, {
+          progress: 100,
+          status: 'completed',
+          blob,
+        });
+
+        pendingChunks.current.delete(transferId);
+        break;
+      }
+    }
   };
 
   const createRoom = useCallback(
@@ -243,6 +323,85 @@ export function useRoom() {
       socket.emit('chat:message', { message });
     },
     [socket]
+  );
+
+  const sendFile = useCallback(
+    async (file: File) => {
+      const transferId = nanoid();
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+      // Add to own UI
+      addFileTransfer({
+        id: transferId,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        fromId: userId || '',
+        fromUsername: username,
+        progress: 0,
+        status: 'transferring',
+        timestamp: Date.now(),
+      });
+
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      // Convert to base64
+      let binaryString = '';
+      for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+      }
+      const base64 = btoa(binaryString);
+
+      // Send metadata to all peers
+      const metadata: FileTransferMetadata = {
+        id: transferId,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        fromId: userId || '',
+        fromUsername: username,
+        totalChunks,
+      };
+
+      webrtcManager.broadcastDataChannelMessage({
+        type: 'file-metadata',
+        payload: metadata,
+      });
+
+      // Send chunks
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, base64.length);
+        const chunkData = base64.slice(start, end);
+
+        webrtcManager.broadcastDataChannelMessage({
+          type: 'file-chunk',
+          payload: {
+            transferId,
+            chunkIndex: i,
+            data: chunkData,
+          },
+        });
+
+        // Update own progress
+        const progress = Math.round(((i + 1) / totalChunks) * 100);
+        updateFileTransfer(transferId, { progress });
+
+        // Small delay to prevent overwhelming the channel
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+
+      // Send completion
+      webrtcManager.broadcastDataChannelMessage({
+        type: 'file-complete',
+        payload: { transferId },
+      });
+
+      updateFileTransfer(transferId, { progress: 100, status: 'completed' });
+    },
+    [userId, username, addFileTransfer, updateFileTransfer]
   );
 
   const kickUser = useCallback(
@@ -298,6 +457,7 @@ export function useRoom() {
     joinRoom,
     leaveRoom,
     sendMessage,
+    sendFile,
     kickUser,
     muteUser,
     setUserVideoOff,

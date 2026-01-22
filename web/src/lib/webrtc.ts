@@ -1,7 +1,8 @@
-import type { IceServer } from './types';
+import type { IceServer, DataChannelMessage } from './types';
 
 export class WebRTCManager {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
+  private dataChannels: Map<string, RTCDataChannel> = new Map();
   private localStream: MediaStream | null = null;
   // Default STUN servers for NAT traversal
   private iceServers: IceServer[] = [
@@ -11,6 +12,8 @@ export class WebRTCManager {
   private onTrack: ((peerId: string, stream: MediaStream) => void) | null = null;
   private onIceCandidate: ((peerId: string, candidate: RTCIceCandidateInit) => void) | null = null;
   private onConnectionStateChange: ((peerId: string, state: RTCPeerConnectionState) => void) | null = null;
+  private onDataChannelMessage: ((peerId: string, message: DataChannelMessage) => void) | null = null;
+  private onDataChannelOpen: ((peerId: string) => void) | null = null;
 
   setIceServers(servers: IceServer[]): void {
     this.iceServers = servers;
@@ -20,10 +23,14 @@ export class WebRTCManager {
     onTrack?: (peerId: string, stream: MediaStream) => void;
     onIceCandidate?: (peerId: string, candidate: RTCIceCandidateInit) => void;
     onConnectionStateChange?: (peerId: string, state: RTCPeerConnectionState) => void;
+    onDataChannelMessage?: (peerId: string, message: DataChannelMessage) => void;
+    onDataChannelOpen?: (peerId: string) => void;
   }): void {
     this.onTrack = callbacks.onTrack || null;
     this.onIceCandidate = callbacks.onIceCandidate || null;
     this.onConnectionStateChange = callbacks.onConnectionStateChange || null;
+    this.onDataChannelMessage = callbacks.onDataChannelMessage || null;
+    this.onDataChannelOpen = callbacks.onDataChannelOpen || null;
   }
 
   async getLocalStream(video: boolean = true, audio: boolean = true): Promise<MediaStream> {
@@ -78,6 +85,11 @@ export class WebRTCManager {
       }
     };
 
+    // Handle incoming data channel from remote peer
+    pc.ondatachannel = (event) => {
+      this.setupDataChannel(peerId, event.channel);
+    };
+
     // Add local tracks
     if (this.localStream) {
       for (const track of this.localStream.getTracks()) {
@@ -89,6 +101,66 @@ export class WebRTCManager {
     return pc;
   }
 
+  private setupDataChannel(peerId: string, channel: RTCDataChannel): void {
+    channel.binaryType = 'arraybuffer';
+
+    channel.onopen = () => {
+      this.dataChannels.set(peerId, channel);
+      if (this.onDataChannelOpen) {
+        this.onDataChannelOpen(peerId);
+      }
+    };
+
+    channel.onmessage = (event) => {
+      if (this.onDataChannelMessage) {
+        try {
+          const message = JSON.parse(event.data) as DataChannelMessage;
+          this.onDataChannelMessage(peerId, message);
+        } catch {
+          console.warn('Failed to parse data channel message');
+        }
+      }
+    };
+
+    channel.onclose = () => {
+      this.dataChannels.delete(peerId);
+    };
+
+    channel.onerror = (error) => {
+      console.error('Data channel error:', error);
+    };
+  }
+
+  createDataChannel(peerId: string): RTCDataChannel | null {
+    const pc = this.peerConnections.get(peerId);
+    if (!pc) return null;
+
+    const channel = pc.createDataChannel('file-transfer', {
+      ordered: true,
+    });
+    this.setupDataChannel(peerId, channel);
+    return channel;
+  }
+
+  getDataChannel(peerId: string): RTCDataChannel | undefined {
+    return this.dataChannels.get(peerId);
+  }
+
+  sendDataChannelMessage(peerId: string, message: DataChannelMessage): boolean {
+    const channel = this.dataChannels.get(peerId);
+    if (!channel || channel.readyState !== 'open') {
+      return false;
+    }
+    channel.send(JSON.stringify(message));
+    return true;
+  }
+
+  broadcastDataChannelMessage(message: DataChannelMessage): void {
+    for (const [peerId] of this.dataChannels) {
+      this.sendDataChannelMessage(peerId, message);
+    }
+  }
+
   getPeerConnection(peerId: string): RTCPeerConnection | undefined {
     return this.peerConnections.get(peerId);
   }
@@ -97,6 +169,11 @@ export class WebRTCManager {
     let pc = this.peerConnections.get(peerId);
     if (!pc) {
       pc = this.createPeerConnection(peerId);
+    }
+
+    // Create data channel before creating offer (only offerer creates it)
+    if (!this.dataChannels.has(peerId)) {
+      this.createDataChannel(peerId);
     }
 
     const offer = await pc.createOffer();
@@ -134,6 +211,12 @@ export class WebRTCManager {
   }
 
   closePeerConnection(peerId: string): void {
+    const channel = this.dataChannels.get(peerId);
+    if (channel) {
+      channel.close();
+      this.dataChannels.delete(peerId);
+    }
+
     const pc = this.peerConnections.get(peerId);
     if (pc) {
       pc.close();
@@ -142,6 +225,11 @@ export class WebRTCManager {
   }
 
   closeAllConnections(): void {
+    for (const [, channel] of this.dataChannels) {
+      channel.close();
+    }
+    this.dataChannels.clear();
+
     for (const [, pc] of this.peerConnections) {
       pc.close();
     }

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { User, ChatMessage, IceServer } from '../lib/types';
+import type { User, ChatMessage, IceServer, FileTransfer } from '../lib/types';
 
 interface RoomState {
   // Room info
@@ -23,6 +23,9 @@ interface RoomState {
   // Chat
   messages: ChatMessage[];
 
+  // File transfers
+  fileTransfers: FileTransfer[];
+
   // Remote streams
   remoteStreams: Map<string, MediaStream>;
 
@@ -45,6 +48,8 @@ interface RoomState {
   setVideoOffByAdmin: (off: boolean) => void;
   setCanChat: (canChat: boolean) => void;
   addMessage: (message: ChatMessage) => void;
+  addFileTransfer: (transfer: FileTransfer) => void;
+  updateFileTransfer: (id: string, updates: Partial<FileTransfer>) => void;
   setRemoteStream: (peerId: string, stream: MediaStream) => void;
   removeRemoteStream: (peerId: string) => void;
   setIceServers: (servers: IceServer[]) => void;
@@ -65,6 +70,7 @@ const initialState = {
   isVideoOffByAdmin: false,
   canChat: true,
   messages: [],
+  fileTransfers: [],
   remoteStreams: new Map<string, MediaStream>(),
   iceServers: [],
 };
@@ -115,6 +121,18 @@ export const useRoomStore = create<RoomState>((set) => ({
   addMessage: (message) =>
     set((state) => ({
       messages: [...state.messages, message],
+    })),
+
+  addFileTransfer: (transfer) =>
+    set((state) => ({
+      fileTransfers: [...state.fileTransfers, transfer],
+    })),
+
+  updateFileTransfer: (id, updates) =>
+    set((state) => ({
+      fileTransfers: state.fileTransfers.map((t) =>
+        t.id === id ? { ...t, ...updates } : t
+      ),
     })),
 
   setRemoteStream: (peerId, stream) =>
